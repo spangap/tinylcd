@@ -1,0 +1,69 @@
+menu "spangap: tinylcd"
+
+# This straddle DEFINES the schema; a board straddle SETS the values from its
+# straddle.yaml kconfig: block (gated `when: spangap/tinylcd` so a build that
+# doesn't stage tinylcd never sees the symbols). No pin defaults here — a board
+# that doesn't publish pins gets the -1 "no panel" no-op build.
+
+config TINYLCD_SDA_PIN
+    int "OLED I2C SDA GPIO (-1 = no panel)"
+    default -1
+
+config TINYLCD_SCL_PIN
+    int "OLED I2C SCL GPIO (-1 = no panel)"
+    default -1
+
+config TINYLCD_RST_PIN
+    int "OLED reset GPIO (-1 = none)"
+    default -1
+
+config TINYLCD_I2C_ADDR
+    hex "OLED I2C address (7-bit)"
+    default 0x3C
+
+config TINYLCD_I2C_HZ
+    int "I2C clock (Hz)"
+    default 400000
+
+choice TINYLCD_CONTROLLER
+    prompt "Panel controller"
+    default TINYLCD_SSD1306
+    help
+      SSD1306 drives the common 0.96" 128x64 panels; SH1106 the 1.3" ones
+      (132-column RAM — u8g2's sh1106 profile handles the 2-pixel offset).
+
+config TINYLCD_SSD1306
+    bool "SSD1306"
+
+config TINYLCD_SH1106
+    bool "SH1106"
+
+endchoice
+
+config TINYLCD_BUTTON_PIN
+    int "Page-advance button GPIO (-1 = none)"
+    default -1
+    help
+      Active-low momentary button (typically the BOOT strap pin, GPIO 0). A
+      short click advances to the next page; a hold past 500 ms turns the
+      screen off, unless the page on screen absorbs the long press; a press
+      that starts with the screen off wakes it and is absorbed.
+
+config TINYLCD_SPLASH_MS
+    int "Splash duration (ms)"
+    default 3000
+    help
+      How long the boot splash (the firmware display name, centered) stays up
+      before the first registered page takes over.
+
+config TINYLCD_PAGE_INDICATOR
+    int "Page-dot position default (0-3)"
+    default 1
+    help
+      Seeds s.tinylcd.page_indicator (runtime-editable): 0 = top, 1 = bottom,
+      2 = top in orientation 0 / bottom in 1, 3 = opposite of 2. A board sets
+      this so the dots default to the side its button sits on; it is the one
+      s.tinylcd.* default that is board-dependent, which is why it lives here
+      and not in the settings: block.
+
+endmenu

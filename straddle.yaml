@@ -1,0 +1,44 @@
+# spangap/tinylcd — paged status UI for tiny mono I2C OLEDs (SSD1306/SH1106).
+#
+# The counterpart to spangap-lcd at the other end of the display scale: a
+# 1-bpp u8g2 framebuffer, a flat ring of full-screen status pages, one button.
+# A board whose only screen is a small OLED stages this (additional_installs)
+# and publishes its pins as CONFIG_TINYLCD_* values in a when:-gated kconfig
+# group; straddles contribute pages from an esp-idf/conditional/tinylcd/ slice
+# plus a when:-gated hook, so headless and TFT builds never compile them.
+#
+# Owns the display task, the vendored u8g2 library (esp-idf/components/u8g2),
+# the boot splash and the page-advance button. With no pins published the whole
+# thing compiles to no-ops — safe to stage unconditionally.
+schema_version: 1
+name: spangap/tinylcd
+prefix: tinylcd
+version: 0.0.0
+firmware: esp-idf
+platforms: [idf]
+# spangap-core is implicit (the empty-prefix platform foundation) — not listed.
+services:
+  - { class: TinylcdService, header: tinylcd.h }
+
+# Declarative settings pane (lowered to web panel + LCD pane + storage
+# defaults). tinylcd is only staged by boards that carry the OLED, so the pane
+# appears exactly on the builds where it means something. These rows are the
+# single seed source for s.tinylcd.* — onInit does not storageDefault them.
+settings:
+  - at:
+      - { id: tinylcd, label: "TinyLCD" }
+    rows:
+      - section: "Display"
+      - text: { label: "Standby (s)", key: "s.tinylcd.standby", default: 60 }
+      - caption: "Screen sleeps after this many idle seconds; any button press wakes it. 0 = always on, -1 = boot dark, -2 = never use the screen."
+      - switch: { label: "Flip orientation", key: "s.tinylcd.orientation", default: 0 }
+      # Defaultless on purpose: the default is board-dependent (dots follow
+      # the button's side), seeded in onInit from CONFIG_TINYLCD_PAGE_INDICATOR.
+      - dropdown:
+          label: "Page dots"
+          key: "s.tinylcd.page_indicator"
+          options:
+            - { v: 0, l: "Top" }
+            - { v: 1, l: "Bottom" }
+            - { v: 2, l: "Top unless flipped" }
+            - { v: 3, l: "Bottom unless flipped" }
