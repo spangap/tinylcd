@@ -29,7 +29,7 @@ settings:
       - { id: tinylcd, label: "TinyLCD" }
     rows:
       - section: "Display"
-      - text: { label: "Standby (s)", key: "s.tinylcd.standby", default: 60 }
+      - integer: { label: "Standby", unit: "s", key: "s.tinylcd.standby", min: 0, max: 3600, default: 60 }
       - caption: "Screen sleeps after this many idle seconds; any button press wakes it. 0 = always on, -1 = boot dark, -2 = never use the screen."
       - switch: { label: "Flip orientation", key: "s.tinylcd.orientation", default: 0 }
       # Defaultless on purpose: the default is board-dependent (dots follow
